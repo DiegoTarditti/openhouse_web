@@ -1,0 +1,55 @@
+{% macro tarjeta(p) %}
+<article class="tarjeta">
+  <div class="tarjeta-foto">
+    {% if p.fotos %}<img src="{{ p.fotos[0] }}" alt="" loading="lazy" width="800" height="600">{% endif %}
+  </div>
+  <div class="tarjeta-cuerpo">
+    <span class="insignia {{ 'campo' if p.es_rural }}">{{ p.operacion_etiqueta }} · {{ p.tipo_etiqueta }}</span>
+    <h3><a class="enlace-tarjeta" href="{{ url_for('publico.ficha', slug=p.slug) }}">{{ p.titulo }}</a></h3>
+    <p class="ubic">{{ p.ubicacion }}</p>
+    <div class="datos">
+      {% if p.superficie_ha %}<span>{{ p.superficie_ha | ha }}</span>
+      {% elif p.superficie_total_m2 %}<span>{{ p.superficie_total_m2 | numero }} m²</span>{% endif %}
+      {% if p.dormitorios %}<span>{{ p.dormitorios }} dorm.</span>{% endif %}
+      {% if p.banios %}<span>{{ p.banios }} baño{{ 's' if p.banios > 1 }}</span>{% endif %}
+      {% if p.cocheras %}<span>{{ p.cocheras }} cochera{{ 's' if p.cocheras > 1 }}</span>{% endif %}
+    </div>
+    <p class="precio">{{ p | precio }}
+      {% if p.precio_por_ha %}<small>USD {{ p.precio_por_ha | numero }} por hectárea</small>{% endif %}
+    </p>
+  </div>
+</article>
+{% endmacro %}
+
+{# Campo de formulario: nombre, etiqueta y tipo. Muestra el error y conserva lo escrito. #}
+{% macro campo(nombre, etiqueta, errores, valores, tipo='text', requerido=False, autocompletar='', area=False, ayuda='') %}
+<div class="campo {{ 'error' if errores and errores.get(nombre) }}">
+  <label for="f-{{ nombre }}">{{ etiqueta }}{% if requerido %} <span aria-hidden="true">*</span>{% endif %}</label>
+  {% if area %}
+  <textarea id="f-{{ nombre }}" name="{{ nombre }}" {% if requerido %}required{% endif %}
+            {% if errores and errores.get(nombre) %}aria-invalid="true" aria-describedby="e-{{ nombre }}"{% endif %}>{{ valores.get(nombre, '') if valores }}</textarea>
+  {% else %}
+  <input id="f-{{ nombre }}" name="{{ nombre }}" type="{{ tipo }}" value="{{ valores.get(nombre, '') if valores }}"
+         {% if requerido %}required{% endif %} {% if autocompletar %}autocomplete="{{ autocompletar }}"{% endif %}
+         {% if errores and errores.get(nombre) %}aria-invalid="true" aria-describedby="e-{{ nombre }}"{% endif %}>
+  {% endif %}
+  {% if errores and errores.get(nombre) %}<div class="msg-error" id="e-{{ nombre }}">{{ errores[nombre] }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{# Avisos y campos de seguridad comunes a todos los formularios. #}
+{% macro seguridad_form(mensaje_general) %}
+{% if mensaje_general %}<div class="aviso error" role="alert">{{ mensaje_general }}</div>{% endif %}
+<input type="hidden" name="csrf" value="{{ csrf_token() }}">
+<div class="oculto-bot" aria-hidden="true">
+  <label>No completar este campo <input type="text" name="sitio_web" tabindex="-1" autocomplete="off"></label>
+</div>
+{% endmacro %}
+
+{% macro migas(items) %}
+<nav class="miga" aria-label="Ruta de navegación">
+  {% for texto, destino in items %}
+    {% if destino %}<a href="{{ destino }}">{{ texto }}</a><span aria-hidden="true">/</span>{% else %}<span>{{ texto }}</span>{% endif %}
+  {% endfor %}
+</nav>
+{% endmacro %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_macros.html" import campo, seguridad_form, migas with context %}
+
+{% block titulo %}Contacto — {{ sitio.nombre }}{% endblock %}
+{% block descripcion %}Escribinos, llamanos o visitanos en {{ sitio.direccion }}. {{ sitio.horario }}.{% endblock %}
+
+{% block contenido %}
+<div class="encabezado-pagina"><div class="contenedor">
+  {{ migas([('Inicio', url_for('publico.inicio')), ('Contacto', None)]) }}
+  <h1>Contacto</h1>
+  <p>Contanos qué estás buscando o qué querés vender y te respondemos en el día.</p>
+</div></div>
+
+<div class="contenedor contenido dos-col">
+  <section class="bloque">
+    <h2>Escribinos</h2>
+    <form method="post" action="{{ url_for('formularios.enviar_contacto') }}" novalidate>
+      {{ seguridad_form(mensaje_general) }}
+      {{ campo('nombre', 'Nombre y apellido', errores, valores, requerido=True, autocompletar='name') }}
+      <div class="fila-2">
+        {{ campo('email', 'Correo electrónico', errores, valores, tipo='email', requerido=True, autocompletar='email') }}
+        {{ campo('telefono', 'Teléfono (opcional)', errores, valores, tipo='tel', autocompletar='tel') }}
+      </div>
+      {{ campo('mensaje', 'Mensaje', errores, valores, requerido=True, area=True) }}
+      <button class="btn btn-primary btn-lg" type="submit">Enviar mensaje</button>
+    </form>
+  </section>
+
+  <section>
+    <div class="bloque">
+      <h2>Datos de contacto</h2>
+      <table class="tabla-ficha">
+        <tr><th scope="row">Dirección</th><td>{{ sitio.direccion }}</td></tr>
+        <tr><th scope="row">Teléfono</th><td><a href="tel:{{ sitio.telefono | replace(' ', '') | replace('-', '') }}">{{ sitio.telefono }}</a></td></tr>
+        <tr><th scope="row">Correo</th><td><a href="mailto:{{ sitio.email }}">{{ sitio.email }}</a></td></tr>
+        <tr><th scope="row">Horario</th><td>{{ sitio.horario }}</td></tr>
+      </table>
+      <p style="margin-top:16px"><a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/{{ sitio.whatsapp }}">Escribir por WhatsApp</a></p>
+    </div>
+    <div class="bloque">
+      <h2>¿Querés vender o alquilar?</h2>
+      <p>Pedí una tasación sin cargo o publicá tu propiedad con nosotros.</p>
+      <p style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn btn-primary" href="{{ url_for('publico.tasaciones') }}">Pedir tasación</a>
+        <a class="btn btn-ghost" href="{{ url_for('publico.publicar') }}">Publicar propiedad</a>
+      </p>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ titulo }} — {{ sitio.nombre }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block contenido %}
+<div class="contenedor centrado">
+  <div class="codigo-error">{{ codigo }}</div>
+  <h1>{{ titulo }}</h1>
+  <p>{{ detalle }}</p>
+  <p style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+    <a class="btn btn-primary btn-lg" href="{{ url_for('publico.inicio') }}">Ir al inicio</a>
+    <a class="btn btn-ghost btn-lg" href="{{ url_for('publico.listado') }}">Ver propiedades</a>
+  </p>
+</div>
+{% endblock %}

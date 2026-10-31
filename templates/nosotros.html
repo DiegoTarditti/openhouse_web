@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import migas with context %}
+
+{% block titulo %}Nosotros — {{ sitio.nombre }}{% endblock %}
+{% block descripcion %}Más de 15 años acompañando a familias y productores en la compra, venta y alquiler de propiedades urbanas y rurales de Santa Fe.{% endblock %}
+
+{% block contenido %}
+<div class="encabezado-pagina"><div class="contenedor">
+  {{ migas([('Inicio', url_for('publico.inicio')), ('Nosotros', None)]) }}
+  <h1>Una inmobiliaria que conoce la ciudad y el campo</h1>
+  <p>{{ sitio.nombre }} nació para acompañar a quienes buscan un hogar en Rosario y a quienes trabajan la tierra en el sur de Santa Fe.</p>
+</div></div>
+
+<div class="contenedor contenido">
+  <div class="bloque">
+    <h2>Quiénes somos</h2>
+    <p>Texto institucional pendiente: historia de la inmobiliaria, equipo y matrícula profesional. Se completa con el material que entregue el cliente.</p>
+  </div>
+  <div class="valores">
+    <div class="valor"><h3>Conocimiento de la zona</h3><p>Operamos en Rosario y en los principales departamentos agrícolas y ganaderos de la provincia.</p></div>
+    <div class="valor"><h3>Asesoramiento rural</h3><p>Relevamiento catastral, análisis de aptitud y valuación agronómica para campos y chacras.</p></div>
+    <div class="valor"><h3>Trato directo</h3><p>Un asesor te acompaña en toda la operación, de la primera visita a la escritura.</p></div>
+  </div>
+  <p style="margin-top:28px"><a class="btn btn-primary btn-lg" href="{{ url_for('publico.contacto') }}">Hablemos</a></p>
+</div>
+{% endblock %}

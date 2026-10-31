@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% from "_macros.html" import tarjeta, migas with context %}
+
+{% set titulo_pagina = ('Campos y chacras' if rural else 'Propiedades') ~
+   (' en venta' if f.operacion == 'venta' else ' en alquiler' if f.operacion == 'alquiler' else '') %}
+
+{% block titulo %}{{ titulo_pagina }}{% if f.texto %} · {{ f.texto }}{% endif %} — {{ sitio.nombre }}{% endblock %}
+{% block descripcion %}{% if rural %}Campos agrícolas, ganaderos y chacras en Santa Fe: hectáreas, aptitud y precio por hectárea.{% else %}Departamentos, casas, locales, lotes y campos en Rosario y Santa Fe. Filtrá por zona, precio y superficie.{% endif %}{% endblock %}
+{% block canonica %}{{ sitio.url }}{{ request.path }}{% endblock %}
+
+{% block head %}
+{% if vista == 'mapa' %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+{% endif %}
+{% if res.pagina > 1 or hay_filtros %}<meta name="robots" content="noindex,follow">{% endif %}
+{% endblock %}
+
+{% block contenido %}
+<div class="encabezado-pagina">
+  <div class="contenedor">
+    {{ migas([('Inicio', url_for('publico.inicio')), (titulo_pagina, None)]) }}
+    <h1>{{ titulo_pagina }}</h1>
+    <p>{% if rural %}Campos agrícolas, ganaderos, tamberos y chacras en la provincia de Santa Fe.{% else %}Encontrá tu próxima propiedad en Rosario y alrededores.{% endif %}</p>
+  </div>
+</div>
+
+<div class="contenedor listado-layout">
+  <aside class="filtros" aria-label="Filtros">
+    <details {{ 'open' if hay_filtros }} id="detalle-filtros">
+      <summary>Filtrar resultados</summary>
+      <h2>Filtrar resultados</h2>
+      <form method="get" action="{{ request.path }}">
+        <input type="hidden" name="orden" value="{{ f.orden }}">
+        {% if vista == 'mapa' %}<input type="hidden" name="vista" value="mapa">{% endif %}
+        <div class="campo">
+          <label for="l-op">Operación</label>
+          <select id="l-op" name="operacion">
+            <option value="">Venta y alquiler</option>
+            {% for k, v in operaciones.items() %}<option value="{{ k }}" {{ 'selected' if f.operacion == k }}>{{ v }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="campo">
+          <label for="l-tipo">Tipo</label>
+          <select id="l-tipo" name="tipo">
+            <option value="">Todos</option>
+            {% for k, v in tipos.items() %}
+              {% if not rural or k in ('campo', 'chacra') %}<option value="{{ k }}" {{ 'selected' if f.tipo == k }}>{{ v }}</option>{% endif %}
+            {% endfor %}
+          </select>
+        </div>
+        <div class="campo">
+          <label for="l-q">Zona o localidad</label>
+          <input id="l-q" type="text" name="q" value="{{ f.texto }}" maxlength="80" placeholder="Ej: Roldán">
+        </div>
+        <div class="fila-2">
+          <div class="campo"><label for="l-pmin">Precio desde (USD)</label>
+            <input id="l-pmin" type="text" inputmode="numeric" name="precio_min" value="{{ request.args.get('precio_min', '') }}"></div>
+          <div class="campo"><label for="l-pmax">Precio hasta (USD)</label>
+            <input id="l-pmax" type="text" inputmode="numeric" name="precio_max" value="{{ request.args.get('precio_max', '') }}"></div>
+        </div>
+        {% if rural or f.tipo in ('campo', 'chacra') %}
+        <div class="fila-2">
+          <div class="campo"><label for="l-hmin">Hectáreas desde</label>
+            <input id="l-hmin" type="text" inputmode="decimal" name="ha_min" value="{{ request.args.get('ha_min', '') }}"></div>
+          <div class="campo"><label for="l-hmax">Hectáreas hasta</label>
+            <input id="l-hmax" type="text" inputmode="decimal" name="ha_max" value="{{ request.args.get('ha_max', '') }}"></div>
+        </div>
+        {% endif %}
+        {% if not rural %}
+        <div class="campo">
+          <label for="l-dorm">Dormitorios (mínimo)</label>
+          <select id="l-dorm" name="dorm">
+            <option value="">Indistinto</option>
+            {% for n in (1, 2, 3, 4) %}<option value="{{ n }}" {{ 'selected' if f.dormitorios_min == n }}>{{ n }}{{ '+' if n == 4 }}</option>{% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        <button class="btn btn-primary btn-block" type="submit">Aplicar filtros</button>
+        {% if hay_filtros %}<a class="btn btn-ghost btn-block" style="margin-top:8px" href="{{ request.path }}">Limpiar filtros</a>{% endif %}
+      </form>
+    </details>
+  </aside>
+
+  <section aria-label="Resultados">
+    <div class="barra-resultados">
+      <strong>{{ res.total }} resultado{{ 's' if res.total != 1 }}</strong>
+      <div class="acciones">
+        <form method="get" action="{{ request.path }}">
+          {% for k, v in request.args.items() if k not in ('orden', 'pagina') %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+          <label class="sr-only" for="l-orden">Ordenar por</label>
+          <select id="l-orden" name="orden" onchange="this.form.submit()">
+            {% for k, v in ordenes.items() if (rural or k != 'ha_desc') %}<option value="{{ k }}" {{ 'selected' if f.orden == k }}>{{ v }}</option>{% endfor %}
+          </select>
+          <noscript><button class="btn btn-ghost" type="submit">Ordenar</button></noscript>
+        </form>
+        <div class="segmento" role="group" aria-label="Vista">
+          <a href="{{ url_con(vista=None) }}" {% if vista == 'lista' %}aria-current="true"{% endif %}>Lista</a>
+          <a href="{{ url_con(vista='mapa') }}" {% if vista == 'mapa' %}aria-current="true"{% endif %}>Mapa</a>
+        </div>
+      </div>
+    </div>
+
+    {% if hay_filtros %}
+    <div class="chips" aria-label="Filtros aplicados">
+      {% if f.operacion %}<span class="chip">{{ operaciones[f.operacion] }}</span>{% endif %}
+      {% if f.tipo %}<span class="chip">{{ tipos[f.tipo] }}</span>{% endif %}
+      {% if f.texto %}<span class="chip">“{{ f.texto }}”</span>{% endif %}
+      {% if f.precio_min is not none %}<span class="chip">Desde USD {{ f.precio_min | numero }}</span>{% endif %}
+      {% if f.precio_max is not none %}<span class="chip">Hasta USD {{ f.precio_max | numero }}</span>{% endif %}
+      {% if f.ha_min is not none %}<span class="chip">Desde {{ f.ha_min | ha }}</span>{% endif %}
+      {% if f.ha_max is not none %}<span class="chip">Hasta {{ f.ha_max | ha }}</span>{% endif %}
+      {% if f.dormitorios_min %}<span class="chip">{{ f.dormitorios_min }}+ dormitorios</span>{% endif %}
+    </div>
+    {% endif %}
+
+    {% if res.total == 0 %}
+    <div class="vacio">
+      <h2>No encontramos propiedades con esos filtros</h2>
+      <p>Probá ampliando el rango de precio o quitando algún filtro. También podés contarnos qué buscás y te avisamos cuando aparezca.</p>
+      <p><a class="btn btn-primary" href="{{ url_for('publico.contacto') }}">Contanos qué buscás</a></p>
+    </div>
+    {% elif vista == 'mapa' %}
+    <div class="listado-mapa">
+      <div class="lista-lateral">{% for p in res.propiedades %}{{ tarjeta(p) }}{% endfor %}</div>
+      <div>
+        <div id="mapa" class="mapa mapa-grande" role="region" aria-label="Mapa de propiedades"></div>
+        <p class="mapa-nota">{{ marcadores | length }} de {{ res.total }} propiedades tienen ubicación en el mapa. La ubicación de los campos es aproximada.</p>
+      </div>
+    </div>
+    <script type="application/json" id="datos-mapa">{{ marcadores | tojson }}</script>
+    {% else %}
+    <div class="grilla tres">{% for p in res.propiedades %}{{ tarjeta(p) }}{% endfor %}</div>
+    {% endif %}
+
+    {% if res.paginas > 1 %}
+    <nav class="paginado" aria-label="Paginado">
+      {% if res.pagina > 1 %}<a href="{{ url_con(pagina=res.pagina - 1) }}" rel="prev">← Anterior</a>{% else %}<span class="deshabilitado">← Anterior</span>{% endif %}
+      {% for n in range(1, res.paginas + 1) %}
+        {% if n == res.pagina %}<span aria-current="page">{{ n }}</span>{% else %}<a href="{{ url_con(pagina=n) }}">{{ n }}</a>{% endif %}
+      {% endfor %}
+      {% if res.pagina < res.paginas %}<a href="{{ url_con(pagina=res.pagina + 1) }}" rel="next">Siguiente →</a>{% else %}<span class="deshabilitado">Siguiente →</span>{% endif %}
+    </nav>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if vista == 'mapa' and res.total %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="{{ url_for('static', filename='js/mapa.js') }}"></script>
+{% endif %}
+<script>
+  // En pantallas grandes los filtros siempre se ven abiertos.
+  (function () {
+    var d = document.getElementById('detalle-filtros');
+    if (d && window.matchMedia('(min-width: 981px)').matches) d.open = true;
+  })();
+</script>
+{% endblock %}

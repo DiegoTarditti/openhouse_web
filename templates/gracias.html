@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block titulo %}¡Gracias! — {{ sitio.nombre }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block contenido %}
+<div class="contenedor centrado">
+  <span class="etiqueta">{{ tipo_texto }}</span>
+  <h1>¡Gracias! Recibimos tu mensaje</h1>
+  <p>Un asesor se va a comunicar con vos a la brevedad{% if tipo in ('tasacion', 'publicar') %} para coordinar la visita{% endif %}. Si es urgente, escribinos por WhatsApp.</p>
+  <p style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+    <a class="btn btn-primary btn-lg" href="{{ url_for('publico.listado') }}">Seguir viendo propiedades</a>
+    <a class="btn btn-wa btn-lg" target="_blank" rel="noopener" href="https://wa.me/{{ sitio.whatsapp }}">WhatsApp</a>
+  </p>
+</div>
+{% endblock %}

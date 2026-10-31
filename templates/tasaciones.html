@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_macros.html" import campo, seguridad_form, migas with context %}
+
+{% block titulo %}Tasaciones de propiedades y campos — {{ sitio.nombre }}{% endblock %}
+{% block descripcion %}Tasación sin cargo de departamentos, casas, campos y chacras en Rosario y Santa Fe. Valuación agronómica para propiedades rurales.{% endblock %}
+
+{% block contenido %}
+<div class="encabezado-pagina"><div class="contenedor">
+  {{ migas([('Inicio', url_for('publico.inicio')), ('Tasaciones', None)]) }}
+  <h1>Tasá tu propiedad sin cargo</h1>
+  <p>Valuamos departamentos, casas, locales, campos y chacras con datos reales del mercado de la zona.</p>
+</div></div>
+
+<div class="contenedor contenido dos-col">
+  <section class="bloque">
+    <h2>Pedí tu tasación</h2>
+    <form method="post" action="{{ url_for('formularios.enviar_tasacion') }}" novalidate>
+      {{ seguridad_form(mensaje_general) }}
+      {{ campo('nombre', 'Nombre y apellido', errores, valores, requerido=True, autocompletar='name') }}
+      <div class="fila-2">
+        {{ campo('email', 'Correo electrónico', errores, valores, tipo='email', requerido=True, autocompletar='email') }}
+        {{ campo('telefono', 'Teléfono', errores, valores, tipo='tel', requerido=True, autocompletar='tel') }}
+      </div>
+      <div class="campo">
+        <label for="f-tipo_propiedad">Tipo de propiedad</label>
+        <select id="f-tipo_propiedad" name="tipo_propiedad">
+          {% for k, v in tipos.items() %}<option value="{{ v }}" {{ 'selected' if valores and valores.get('tipo_propiedad') == v }}>{{ v }}</option>{% endfor %}
+        </select>
+      </div>
+      {{ campo('direccion', 'Dirección o ubicación del campo', errores, valores) }}
+      {{ campo('superficie', 'Superficie (m² o hectáreas)', errores, valores) }}
+      {{ campo('mensaje', 'Algo más que quieras contarnos (opcional)', errores, valores, area=True) }}
+      <button class="btn btn-primary btn-lg" type="submit">Pedir tasación</button>
+    </form>
+  </section>
+
+  <section>
+    <div class="bloque">
+      <h2>Cómo trabajamos</h2>
+      <ol class="pasos">
+        <li><div><strong>Te llamamos para coordinar</strong>Nos contás lo básico y acordamos una visita.</div></li>
+        <li><div><strong>Visitamos y relevamos</strong>En campos, con relevamiento catastral y análisis de suelo y mejoras.</div></li>
+        <li><div><strong>Te entregamos la valuación</strong>Con comparables de la zona y una recomendación de precio de publicación.</div></li>
+      </ol>
+    </div>
+    <div class="bloque">
+      <h2>Para propiedades rurales</h2>
+      <p>La valuación considera aptitud, índice productivo, agua, accesos y mejoras, para que publiques el campo a un precio competitivo.</p>
+    </div>
+  </section>
+</div>
+{% endblock %}

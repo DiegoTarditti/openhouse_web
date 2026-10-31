@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% from "_macros.html" import tarjeta with context %}
+
+{% block contenido %}
+<section class="hero">
+  <div class="contenedor">
+    <div class="hero-texto">
+      <span class="etiqueta">Rosario y zona rural santafesina</span>
+      <h1>Tu próxima propiedad,<br>en la ciudad o en el campo.</h1>
+      <p class="bajada">Compra, venta y alquiler de departamentos, casas, campos y chacras. Más de 15 años acompañando a familias y productores de Santa Fe.</p>
+      <div class="cifras">
+        <div><strong>850+</strong><span>operaciones cerradas</span></div>
+        <div><strong>{{ cant_campos }}</strong><span>campos y chacras publicados</span></div>
+        <div><strong>15</strong><span>años de trayectoria</span></div>
+      </div>
+    </div>
+
+    <form class="buscador" action="{{ url_for('publico.listado') }}" method="get" role="search" aria-label="Buscar propiedades">
+      <div class="pestanas" role="radiogroup" aria-label="Operación">
+        <label class="pestana"><input type="radio" name="operacion" value="venta" checked> Comprar</label>
+        <label class="pestana"><input type="radio" name="operacion" value="alquiler"> Alquilar</label>
+      </div>
+      <div class="campo">
+        <label for="h-tipo">Tipo de propiedad</label>
+        <select id="h-tipo" name="tipo">
+          <option value="">Todas</option>
+          {% for clave, nombre in tipos.items() %}<option value="{{ clave }}">{{ nombre }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="campo">
+        <label for="h-q">Zona o localidad</label>
+        <input id="h-q" type="text" name="q" placeholder="Ej: Fisherton, Roldán, zona rural…" maxlength="80">
+      </div>
+      <button class="btn btn-primary btn-block btn-lg" type="submit">Buscar propiedades</button>
+    </form>
+  </div>
+</section>
+
+<section class="seccion contenedor" id="propiedades">
+  <div class="seccion-cabecera">
+    <div>
+      <h2>Propiedades destacadas</h2>
+      <p class="sub">Selección actualizada de la ciudad y la zona rural</p>
+    </div>
+    <a href="{{ url_for('publico.listado') }}" class="btn btn-ghost">Ver todas →</a>
+  </div>
+  <div class="grilla">
+    {% for p in destacadas %}{{ tarjeta(p) }}{% endfor %}
+  </div>
+</section>
+
+<section class="dos-mundos" id="campos">
+  <div class="contenedor">
+    <div>
+      <span class="kicker">Para la ciudad</span>
+      <h3>Vivienda urbana a medida</h3>
+      <p>Departamentos, casas y locales comerciales en los barrios más buscados de Rosario, con asesoramiento en financiación y tasación.</p>
+      <a class="btn btn-ghost" href="{{ url_for('publico.listado') }}">Ver propiedades urbanas</a>
+    </div>
+    <div>
+      <span class="kicker campo-k">Para el campo</span>
+      <h3>Especialistas en propiedades rurales</h3>
+      <p>Campos agrícolas, ganaderos y chacras en toda la provincia de Santa Fe, con relevamiento catastral y valuación agronómica.</p>
+      <a class="btn btn-ghost" href="{{ url_for('publico.campos') }}">Ver campos y chacras</a>
+    </div>
+  </div>
+</section>
+
+{% if rurales %}
+<section class="seccion contenedor">
+  <div class="seccion-cabecera">
+    <div>
+      <h2>Campos y chacras en venta</h2>
+      <p class="sub">Hectáreas, aptitud y precio por hectárea a la vista</p>
+    </div>
+    <a href="{{ url_for('publico.campos') }}" class="btn btn-ghost">Ver todos los campos →</a>
+  </div>
+  <div class="grilla tres">
+    {% for p in rurales %}{{ tarjeta(p) }}{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="seccion contenedor" style="padding-top:0">
+  <div class="bloque" style="display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;margin:0">
+    <div style="flex:1 1 360px">
+      <h2 style="margin-bottom:6px">¿Querés vender o alquilar tu propiedad?</h2>
+      <p>Hacemos la tasación sin cargo y la publicamos en los principales portales.</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a class="btn btn-primary btn-lg" href="{{ url_for('publico.tasaciones') }}">Pedir tasación</a>
+      <a class="btn btn-ghost btn-lg" href="{{ url_for('publico.publicar') }}">Publicar mi propiedad</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
